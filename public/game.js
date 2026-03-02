@@ -2,7 +2,7 @@
 // ════════════════════════════════════════════════════════════
 //  CONSTANTS
 // ════════════════════════════════════════════════════════════
-const TOTAL_COURSE   = 86400;   // 1× speed → 24 h, 12× speed → 2 h
+const TOTAL_COURSE   = 1800;    // 1× speed → 30 min, 12× speed → ~2.5 min
 const MIN_SPEED      = 0.3;
 const MAX_SPEED      = 12.0;
 const GAME_W         = 800;
@@ -10,13 +10,12 @@ const BASE_PPU       = 50;
 const GAME_SEED      = 0xBEEFDEAD;
 const CHUNK_SIZE     = 10;
 const SYNC_MS        = 150;
-const P_HALF_W       = 13;
-const P_HALF_H       = 10;
-const CLIFF_GRACE_MS = 2200;
+const P_HALF_W       = 11;
+const P_HALF_H       = 11;
 const SIDEBAR_L      = 120;
-const SIDEBAR_R      = 220;
+const SIDEBAR_R      = 240;
 
-const COL_BG   = '#F5F5F0';
+const COL_BG   = '#FFFFFF';
 const COL_DARK = '#1A1A2E';
 
 const ITEM_BOX_INTERVAL = 15;
@@ -25,25 +24,25 @@ const SHELTER_INTERVAL  = 180;
 const SHELTER_SEED_XOR  = 0xBEEF4567;
 
 const ITEMS = [
-  { id:1,  name:'雪玉',             icon:'⚪', desc:'相手1人+2時間' },
-  { id:2,  name:'大雪玉',           icon:'🔵', desc:'1位+3時間' },
-  { id:3,  name:'吹雪',             icon:'❄️',  desc:'ランダム3人+1時間' },
-  { id:4,  name:'雪崩',             icon:'🏔️',  desc:'全員+3時間(岩陰で回避可)' },
-  { id:5,  name:'雪だるま',         icon:'⛄', desc:'前方3人+2時間(回避可)' },
-  { id:6,  name:'瞬間移動',         icon:'⚡', desc:'自分+50%進む' },
-  { id:7,  name:'お湯',             icon:'♨️',  desc:'次の災害を無効化' },
-  { id:8,  name:'ワックス',         icon:'🎿', desc:'最高速×1.5 30分' },
-  { id:9,  name:'コーヒー',         icon:'☕', desc:'ペナルティ-3時間' },
-  { id:10, name:'落とし穴',         icon:'🕳️',  desc:'1位+4時間' },
-  { id:11, name:'ロケット',         icon:'🚀', desc:'自分+10%進む' },
-  { id:12, name:'ブースター',       icon:'💨', desc:'速度×2 10分' },
-  { id:13, name:'アイスバーン',     icon:'🧊', desc:'ランダム5人+1時間' },
-  { id:14, name:'スーパー雪だるま', icon:'⛰️',  desc:'前方5人+3時間(回避可)' },
-  { id:15, name:'温泉',             icon:'🛁', desc:'自分のペナルティ即時解除' },
+  { id:1,  name:'ゆきだま',               icon:'⚪', desc:'あいて1にん+2じかん' },
+  { id:2,  name:'おおゆきだま',           icon:'🔵', desc:'1い+3じかん' },
+  { id:3,  name:'ふぶき',                 icon:'❄️',  desc:'らんだむ3にん+1じかん' },
+  { id:4,  name:'なだれ',                 icon:'🏔️',  desc:'ぜんいん+3じかん(いわかげでかいひか)' },
+  { id:5,  name:'ゆきだるま',             icon:'⛄', desc:'ぜんぽう3にん+2じかん(かいひか)' },
+  { id:6,  name:'しゅんかんいどう',       icon:'⚡', desc:'じぶん+50%すすむ' },
+  { id:7,  name:'おゆ',                   icon:'♨️',  desc:'つぎのさいがいをむこうか' },
+  { id:8,  name:'わっくす',               icon:'🎿', desc:'さいこうそく×1.5 30ふん' },
+  { id:9,  name:'こーひー',               icon:'☕', desc:'ぺなるてぃ-3じかん' },
+  { id:10, name:'おとしあな',             icon:'🕳️',  desc:'1い+4じかん' },
+  { id:11, name:'ろけっと',               icon:'🚀', desc:'じぶん+10%すすむ' },
+  { id:12, name:'ぶーすたー',             icon:'💨', desc:'そくど×2 10ふん' },
+  { id:13, name:'あいすばーん',           icon:'🧊', desc:'らんだむ5にん+1じかん' },
+  { id:14, name:'すーぱーゆきだるま',     icon:'⛰️',  desc:'ぜんぽう5にん+3じかん(かいひか)' },
+  { id:15, name:'おんせん',               icon:'🛁', desc:'じぶんのぺなるてぃそくじかいじょ' },
 ];
 
 // ── Dynamic screen dimensions ──
-let CW, CH, SX, PPU, B_PY, CLIFF_PX_L, CLIFF_PX_R;
+let CW, CH, SX, PPU, B_PY;
 
 function resize() {
   CW = canvas.width  = window.innerWidth - SIDEBAR_L - SIDEBAR_R;
@@ -51,8 +50,6 @@ function resize() {
   SX  = CW / GAME_W;
   PPU = BASE_PPU * (CH / 600);
   B_PY = CH * 0.22;
-  CLIFF_PX_L = 62  * SX;
-  CLIFF_PX_R = 738 * SX;
 }
 
 function PY() {
@@ -147,8 +144,6 @@ function mkRNG(seed) {
 //  OBSTACLES
 // ════════════════════════════════════════════════════════════
 const chunkCache  = new Map();
-const CLIFF_L_LOG = 62;
-const CLIFF_R_LOG = 738;
 const MIN_PASS    = 44; // minimum gap width (logical units) that board must fit through
 
 // Returns true if sortedIntervals leave at least one gap >= minPass within [lo, hi]
@@ -172,8 +167,8 @@ function chunkObs(ci) {
   const nMax = 2 + Math.floor(pct * 5);          // 2 → 7
   const n    = 1 + Math.floor(rng() * nMax);
 
-  const PL   = CLIFF_L_LOG + 55;
-  const PR   = CLIFF_R_LOG - 55;
+  const PL   = 10;
+  const PR   = GAME_W - 10;
   const list = [];
   const placed = []; // [x, x+w] intervals already placed in this chunk
 
@@ -223,7 +218,7 @@ function chunkItemBoxes(ci) {
   const rng = mkRNG(((GAME_SEED ^ ITEM_BOX_SEED_XOR) + ci * 0x6B8B4567) >>> 0);
   if (rng() < 0.55) {
     const base = ci * ITEM_BOX_INTERVAL;
-    return [{ id: `box_${ci}`, prog: base + rng() * ITEM_BOX_INTERVAL, x: CLIFF_L_LOG + 70 + rng() * (CLIFF_R_LOG - CLIFF_L_LOG - 140) }];
+    return [{ id: `box_${ci}`, prog: base + rng() * ITEM_BOX_INTERVAL, x: 50 + rng() * (GAME_W - 100) }];
   }
   return [];
 }
@@ -240,6 +235,18 @@ function nearbyItemBoxes(prog) {
     }
   }
   return out;
+}
+
+// Rock obstacles oscillate left/right (deterministic per obstacle)
+function getRockOffset(o) {
+  const hash = o.id.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 0);
+  const freq  = 0.3 + (hash % 100) / 100 * 0.4;   // 0.3–0.7 Hz
+  const phase = (hash * 0.618) % (Math.PI * 2);
+  const amp   = 40 + (hash % 40);                  // 40–80 logical units
+  const raw   = Math.sin(performance.now() / 1000 * freq * Math.PI * 2 + phase) * amp;
+  // Clamp so rock stays on stage
+  const newX  = o.x + raw;
+  return Math.max(0, Math.min(GAME_W - o.w, newX)) - o.x;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -292,9 +299,11 @@ function isHit(o) {
   const screenDy = (o.prog - myProgress) * PPU;
   const oScreenY = PY() + screenDy;
   if (Math.abs(oScreenY - PY()) > o.h * SX / 2 + P_HALF_H * SX + 4) return false;
+  const rockOff = o.type === 'rock' ? getRockOffset(o) : 0;
+  const ox = (o.x + rockOff) * SX;
   const px = myX * SX;
-  return (px + P_HALF_W * SX - 4) > (o.x * SX + 4) &&
-         (px - P_HALF_W * SX + 4) < ((o.x + o.w) * SX - 4);
+  return (px + P_HALF_W * SX - 4) > (ox + 4) &&
+         (px - P_HALF_W * SX + 4) < (ox + o.w * SX - 4);
 }
 
 function checkItemBoxCollisions() {
@@ -324,7 +333,7 @@ function fmt(ms) {
 }
 function fmtTime(ms) {
   const s = Math.floor(ms / 1000);
-  return `${Math.floor(s/3600)}時間${String(Math.floor(s%3600/60)).padStart(2,'0')}分${String(s%60).padStart(2,'0')}秒`;
+  return `${Math.floor(s/3600)}じかん${String(Math.floor(s%3600/60)).padStart(2,'0')}ふん${String(s%60).padStart(2,'0')}びょう`;
 }
 
 function effectiveMaxSpeed() {
@@ -386,25 +395,6 @@ socket.on('penalty', ({ penaltyEnd: pe }) => {
   startCountdown();
 });
 
-socket.on('cliff_reset', () => {
-  myProgress = 0;
-  myX = GAME_W / 2;
-  targetX = GAME_W / 2;
-  hitSet.clear();
-  pickedBoxes.clear();
-  trackHistory.length = 0;
-  awaitServer = false;
-  paused = false;
-  myStatus = 'cliff_pending';
-  showScreen('cliff');
-  setTimeout(() => {
-    if (myStatus === 'cliff_pending') {
-      myStatus = 'playing';
-      gracePeriodEnd = Date.now() + 2000;
-      showScreen('game');
-    }
-  }, CLIFF_GRACE_MS);
-});
 
 socket.on('you_finished', ({ rank, name, time }) => {
   window.location.href =
@@ -413,6 +403,18 @@ socket.on('you_finished', ({ rank, name, time }) => {
 
 socket.on('game_over',  ({ finishers }) => showGameOver(finishers));
 socket.on('game_reset', () => { localStorage.removeItem('skiUUID'); location.reload(); });
+
+socket.on('schedule_info', ({ phase, startTime }) => {
+  handleSchedulePhase(phase, startTime);
+});
+socket.on('schedule_updated', ({ phase, startTime }) => {
+  handleSchedulePhase(phase, startTime);
+});
+
+socket.on('email_registered', ({ email }) => {
+  const msg = document.getElementById('emailMsg');
+  if (msg) { msg.textContent = `✓ ${email} にとうろくしました`; msg.style.color = '#34C759'; }
+});
 
 // ── Item socket events ──
 socket.on('item_picked', ({ boxId, itemId }) => {
@@ -463,7 +465,7 @@ socket.on('item_self_effect', ({ effect, progress, penaltyEnd: pe, speedBoostMul
       }
       break;
     case 'hot_water':
-      showToast('♨️ お湯を装備！次の災害を無効化', 5);
+      showToast('♨️ おゆをそうび！つぎのさいがいをむこうか', 5);
       break;
     default:
       break;
@@ -495,7 +497,7 @@ socket.on('disaster_warning', ({ type, disasterId, countdown, msg }) => {
 socket.on('disaster_hit', ({ sheltered, protected: prot }) => {
   if (sheltered || prot) {
     hideToast();
-    showToast('🪨 岩陰で回避！', 3);
+    showToast('🪨 いわかげでかいひ！', 3);
     addStageFX({ type: 'screen_flash', color: '#44FF88', t: 0.7, maxT: 0.7 });
   } else {
     addStageFX({ type: 'screen_flash', color: '#FF4444', t: 0.7, maxT: 0.7 });
@@ -606,6 +608,26 @@ function updateHUD() {
   // Player count
   const ce = document.getElementById('countNum');
   if (ce) ce.textContent = serverCount;
+
+  // My rank panel
+  const myRankEl = document.getElementById('myRankDisplay');
+  if (myRankEl && myUUID) {
+    const fUUIDs = new Set(serverFinishers.map(f => f.uuid));
+    const myFinisher = serverFinishers.find(f => f.uuid === myUUID);
+    if (myFinisher) {
+      myRankEl.textContent = `${myFinisher.rank} い`;
+    } else {
+      const active = serverPlayers
+        .filter(p => !fUUIDs.has(p.uuid) && p.status !== 'disconnected')
+        .sort((a, b) => b.progress - a.progress);
+      const myIdx = active.findIndex(p => p.uuid === myUUID);
+      if (myIdx >= 0) {
+        myRankEl.textContent = `${serverFinishers.length + myIdx + 1} い`;
+      } else {
+        myRankEl.textContent = '-- 位';
+      }
+    }
+  }
 
   // Ranking (right sidebar)
   const rl = document.getElementById('rankingList');
@@ -745,22 +767,13 @@ function drawBg() {
   ctx.fillStyle = COL_BG;
   ctx.fillRect(0, 0, CW, CH);
 
-  // Subtle cliff edge zones
-  ctx.fillStyle = '#E8E8E2';
-  ctx.fillRect(0, 0, CLIFF_PX_L, CH);
-  ctx.fillRect(CLIFF_PX_R, 0, CW - CLIFF_PX_R, CH);
-
-  ctx.strokeStyle = 'rgba(26,26,46,0.10)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(CLIFF_PX_L, 0); ctx.lineTo(CLIFF_PX_L, CH); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(CLIFF_PX_R, 0); ctx.lineTo(CLIFF_PX_R, CH); ctx.stroke();
-
   // Subtle horizontal texture lines
   const bH  = 40 * (CH / 600);
   const off = (myProgress * PPU) % bH;
-  ctx.strokeStyle = 'rgba(26,26,46,0.035)';
+  ctx.strokeStyle = 'rgba(26,26,46,0.025)';
+  ctx.lineWidth = 1;
   for (let y = bH - off % bH; y < CH; y += bH) {
-    ctx.beginPath(); ctx.moveTo(CLIFF_PX_L, y); ctx.lineTo(CLIFF_PX_R, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CW, y); ctx.stroke();
   }
 }
 
@@ -796,43 +809,48 @@ function drawObs(o) {
   const sw = o.w * SX;
   const sh = o.h * SX;
 
+  ctx.save();
+  ctx.fillStyle = '#111111';
+
   if (o.type === 'tree') {
-    // Triangle only — no trunk
-    ctx.fillStyle = COL_DARK;
+    // ▲ Triangle (黒三角)
     ctx.beginPath();
     ctx.moveTo(cx - sw / 2, sy);
     ctx.lineTo(cx, sy - sh);
     ctx.lineTo(cx + sw / 2, sy);
-    ctx.closePath(); ctx.fill();
-    // Snow highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.closePath();
+    ctx.fill();
+
+  } else if (o.type === 'drift') {
+    // ■ Square / Rectangle (黒四角)
+    const rx = cx - sw / 2;
+    const ry = sy - sh;
     ctx.beginPath();
-    ctx.moveTo(cx - sw * 0.22, sy - sh * 0.58);
-    ctx.lineTo(cx, sy - sh * 0.98);
-    ctx.lineTo(cx + sw * 0.22, sy - sh * 0.58);
-    ctx.closePath(); ctx.fill();
+    ctx.rect(rx, ry, sw, sh);
+    ctx.fill();
 
   } else if (o.type === 'rock') {
-    ctx.fillStyle = COL_DARK;
+    // ⬟ Jagged circle (ギザギザ丸) — spiky star shape, moves left-right
+    const offPx = getRockOffset(o) * SX;
+    const rcx   = cx + offPx;
+    const r1 = Math.min(sw, sh) * 0.50; // outer radius
+    const r2 = r1 * 0.60;               // inner radius
+    const spikes = 8;
+    const cy2 = sy - sh * 0.35;
     ctx.beginPath();
-    ctx.ellipse(cx, sy - sh * 0.38, sw * 0.50, sh * 0.48, 0, 0, Math.PI * 2);
+    for (let i = 0; i < spikes * 2; i++) {
+      const angle = (Math.PI / spikes) * i - Math.PI / 2;
+      const r = (i % 2 === 0) ? r1 : r2;
+      const px2 = rcx + Math.cos(angle) * r;
+      const py2 = cy2 + Math.sin(angle) * r;
+      if (i === 0) ctx.moveTo(px2, py2);
+      else ctx.lineTo(px2, py2);
+    }
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.beginPath();
-    ctx.ellipse(cx - sw * 0.10, sy - sh * 0.52, sw * 0.28, sh * 0.22, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-
-  } else {
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = 'rgba(26,26,46,0.15)';
-    ctx.lineWidth = 1;
-    const ox = scX(o.x);
-    ctx.beginPath();
-    ctx.moveTo(ox, sy);
-    ctx.bezierCurveTo(ox + sw * 0.1, sy - sh * 1.0, ox + sw * 0.3, sy - sh * 1.15, cx, sy - sh);
-    ctx.bezierCurveTo(cx + sw * 0.2, sy - sh * 0.78, ox + sw * 0.9, sy - sh * 0.38, ox + sw, sy);
-    ctx.closePath(); ctx.fill(); ctx.stroke();
   }
+
+  ctx.restore();
 }
 
 function drawItemBox(b) {
@@ -894,59 +912,51 @@ function drawShelter(sh) {
   ctx.font = `${Math.max(8, Math.round(8 * SX))}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('岩陰', cx, sy + shadowH * 0.5);
+  ctx.fillText('いわかげ', cx, sy + shadowH * 0.5);
   ctx.restore();
 }
 
-// Snowboard (top-down elongated shape)
-function drawBoard(lx, sy, name, isMe, idx) {
+// Player as circle
+function drawPlayer(lx, sy, name, isMe, idx) {
   ctx.save();
   const px    = lx * SX;
-  const s     = SX;
-  const color = isMe ? COL_DARK : (idx % 2 === 0 ? '#3A3A5C' : '#5A5A7A');
+  const r     = 11 * SX;
+  const color = isMe ? '#FF3B30' : '#808080';
 
-  // Tilt: carves in direction of movement
-  const tilt = isMe
-    ? Math.max(-0.55, Math.min(0.55, (targetX - myX) / 60))
-    : (Math.sin(idx * 1.7) * 0.28);
-
-  ctx.translate(px, sy);
-  ctx.rotate(tilt);
-
-  const bLen = 26 * s;
-  const bWid = 5 * s;
-
-  // Board body (elongated ellipse = snowboard outline)
+  // Circle body
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.ellipse(0, 0, bWid / 2, bLen / 2, 0, 0, Math.PI * 2);
+  ctx.arc(px, sy, r, 0, Math.PI * 2);
   ctx.fill();
 
-  // Binding straps (two short lines across the board)
-  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
-  ctx.lineWidth = 1.2 * s;
-  ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(-bWid / 2 + s, -bLen / 5); ctx.lineTo(bWid / 2 - s, -bLen / 5); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-bWid / 2 + s,  bLen / 5); ctx.lineTo(bWid / 2 - s,  bLen / 5); ctx.stroke();
+  // Inner highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.arc(px - r * 0.25, sy - r * 0.3, r * 0.40, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.restore();
 
-  // Name tag (always horizontal, drawn without board rotation)
+  // Name tag (self only)
   if (isMe) {
     ctx.save();
     const dn = name.slice(0, 12);
-    const fs = Math.round(10 * s);
-    ctx.font = `600 ${fs}px sans-serif`;
-    const tw = ctx.measureText(dn).width + 8 * s;
-    const tagY = sy - (26 * s) / 2 - 20 * s;
-    ctx.fillStyle = COL_DARK;
-    if (ctx.roundRect) ctx.roundRect(px - tw / 2, tagY - 14 * s, tw, 14 * s, 3);
-    else ctx.rect(px - tw / 2, tagY - 14 * s, tw, 14 * s);
-    ctx.fill();
+    const fs = Math.round(10 * SX);
+    ctx.font = `900 ${fs}px 'Noto Sans JP', sans-serif`;
+    const tw = ctx.measureText(dn).width + 8 * SX;
+    const tagY = sy - r - 20 * SX;
+    ctx.fillStyle = '#FF3B30';
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(px - tw / 2, tagY - 14 * SX, tw, 14 * SX, 3);
+      ctx.fill();
+    } else {
+      ctx.fillRect(px - tw / 2, tagY - 14 * SX, tw, 14 * SX);
+    }
     ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(dn, px, tagY - 4 * s);
+    ctx.fillText(dn, px, tagY - 4 * SX);
     ctx.restore();
   }
 }
@@ -954,12 +964,11 @@ function drawBoard(lx, sy, name, isMe, idx) {
 function drawSpeedLines() {
   if (mySpeed < 3.0) return;
   const alpha = Math.min(0.15, (mySpeed - 3.0) / 9.0 * 0.15);
-  const cL = CLIFF_PX_L, cR = CLIFF_PX_R;
   SL.forEach(sl => {
     sl.y += mySpeed * 2.0;
     if (sl.y > 600 + sl.len) {
       sl.y = -sl.len;
-      sl.x = CLIFF_L_LOG + Math.random() * (CLIFF_R_LOG - CLIFF_L_LOG);
+      sl.x = Math.random() * GAME_W;
       sl.len = 12 + Math.random() * 28;
     }
   });
@@ -968,9 +977,33 @@ function drawSpeedLines() {
   SL.forEach(sl => {
     const sx2 = sl.x * SX;
     const sy2 = sl.y * (CH / 600);
-    if (sx2 < cL || sx2 > cR) return;
     ctx.beginPath(); ctx.moveTo(sx2, sy2); ctx.lineTo(sx2, sy2 + sl.len * SX); ctx.stroke();
   });
+}
+
+function drawProgressGrid() {
+  const interval = TOTAL_COURSE / 10;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(26,26,46,0.12)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.font = `900 ${Math.max(9, Math.round(9 * SX))}px 'Noto Sans JP', sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.fillStyle = 'rgba(26,26,46,0.22)';
+  for (let i = 0; i <= 10; i++) {
+    const y = scY(i * interval);
+    if (y < -20 || y > CH + 20) continue;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(CW, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText(`${i * 10}%`, 4, y - 2);
+    ctx.setLineDash([4, 6]);
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
 }
 
 function render() {
@@ -980,6 +1013,7 @@ function render() {
   // Rock shelters (behind everything, after bg)
   for (const sh of nearbyShelters(myProgress)) drawShelter(sh);
 
+  drawProgressGrid();
   drawSpeedLines();
 
   for (const o of nearbyObs(myProgress)) drawObs(o);
@@ -997,16 +1031,16 @@ function render() {
     const sy = scY(p.progress);
     if (sy < -60 || sy > CH + 60) return;
     ctx.globalAlpha = 0.60;
-    drawBoard(p.x || GAME_W / 2, sy, p.name, false, i);
+    drawPlayer(p.x || GAME_W / 2, sy, p.name, false, i);
     ctx.globalAlpha = 1;
   });
 
-  if (myStatus !== 'join') drawBoard(myX, PY(), myName, true, 0);
+  if (myStatus !== 'join') drawPlayer(myX, PY(), myName, true, 0);
 
   drawStageFX();
 
   if (paused) {
-    ctx.fillStyle = 'rgba(245,245,240,0.40)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillRect(0, 0, CW, CH);
   }
 }
@@ -1056,9 +1090,13 @@ function update(dt) {
   if (myStatus !== 'playing' || awaitServer || paused) return;
 
   const effMax = effectiveMaxSpeed();
-  mySpeed = MIN_SPEED + Math.max(0, Math.min(1, mouseY / CH)) * (effMax - MIN_SPEED);
+  // Speed range mapped to center 60% of screen (top 20% = min, bottom 20% = max)
+  const topBound = CH * 0.20;
+  const botBound = CH * 0.80;
+  const clampedY = Math.max(topBound, Math.min(botBound, mouseY));
+  mySpeed = MIN_SPEED + ((clampedY - topBound) / (botBound - topBound)) * (effMax - MIN_SPEED);
 
-  targetX = Math.max(CLIFF_L_LOG - 15, Math.min(CLIFF_R_LOG + 15, mouseX));
+  targetX = Math.max(10, Math.min(GAME_W - 10, mouseX));
   myX    += (targetX - myX) * Math.min(1, dt * 9);
 
   myProgress = Math.min(TOTAL_COURSE, myProgress + mySpeed * dt);
@@ -1074,22 +1112,13 @@ function update(dt) {
   }
 
   if (Date.now() > gracePeriodEnd) {
-    if (myX < CLIFF_L_LOG || myX > CLIFF_R_LOG) {
-      awaitServer = true;
-      socket.emit('hit_cliff');
-      return;
-    }
     for (const o of nearbyObs(myProgress)) {
       if (hitSet.has(o.id)) continue;
       if (!isHit(o)) continue;
       hitSet.add(o.id);
-      if (o.type === 'drift') {
-        mySpeed = Math.max(MIN_SPEED, mySpeed * 0.65);
-      } else {
-        awaitServer = true;
-        socket.emit('hit_tree', { speed: mySpeed });
-        return;
-      }
+      awaitServer = true;
+      socket.emit('hit_tree', { speed: mySpeed, obsType: o.type });
+      return;
     }
   }
 
@@ -1115,17 +1144,78 @@ function loop(ts) {
 //  SCREEN MANAGEMENT
 // ════════════════════════════════════════════════════════════
 function showScreen(name) {
-  document.getElementById('joinScreen').classList.toggle('hidden',    name !== 'join');
-  document.getElementById('penaltyScreen').classList.toggle('hidden', name !== 'penalty');
-  document.getElementById('cliffScreen').classList.toggle('hidden',   name !== 'cliff');
-  document.getElementById('gameOverScreen').classList.toggle('hidden',name !== 'gameover');
-  canvas.style.opacity = (name === 'penalty' || name === 'cliff') ? '0.28' : '1';
+  document.getElementById('joinScreen').classList.toggle('hidden',     name !== 'join');
+  document.getElementById('penaltyScreen').classList.toggle('hidden',  name !== 'penalty');
+  document.getElementById('gameOverScreen').classList.toggle('hidden', name !== 'gameover');
+  document.getElementById('waitingScreen').classList.toggle('hidden',  name !== 'waiting');
+  document.getElementById('endedScreen').classList.toggle('hidden',    name !== 'ended');
+  canvas.style.opacity = name === 'penalty' ? '0.28' : '1';
 
   if (name !== 'game') {
     paused = false;
     const pi = document.getElementById('pauseIndicator');
     if (pi) pi.classList.remove('visible');
   }
+}
+
+let waitingCountdownTimer = null;
+
+function handleSchedulePhase(phase, startTime) {
+  if (phase === 'waiting') {
+    myStatus = 'waiting';
+    showScreen('waiting');
+    startWaitingCountdown(startTime);
+  } else if (phase === 'ended') {
+    myStatus = 'ended';
+    showScreen('ended');
+  }
+  // 'active' は join フローで処理
+}
+
+function startWaitingCountdown(startTime) {
+  if (waitingCountdownTimer) clearInterval(waitingCountdownTimer);
+  const el = document.getElementById('waitingCountdown');
+  const lb = document.getElementById('waitingStartLabel');
+
+  function tick() {
+    if (!startTime) {
+      if (el) el.textContent = '';
+      if (lb) lb.textContent = 'かいさいじこくはみていです';
+      return;
+    }
+    const now  = Date.now();
+    const rem  = startTime - now;
+    if (rem <= 0) {
+      clearInterval(waitingCountdownTimer);
+      waitingCountdownTimer = null;
+      // Check if game is now active — reload to get fresh state
+      location.reload();
+      return;
+    }
+    const dt = new Date(startTime);
+    const hh = String(dt.getHours()).padStart(2, '0');
+    const mm = String(dt.getMinutes()).padStart(2, '0');
+    if (lb) lb.textContent = `${hh}:${mm} からかいさいします`;
+
+    const s   = Math.ceil(rem / 1000);
+    const rh  = String(Math.floor(s / 3600)).padStart(2, '0');
+    const rm  = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const rs  = String(s % 60).padStart(2, '0');
+    if (el) el.textContent = `${rh}:${rm}:${rs}`;
+  }
+  tick();
+  waitingCountdownTimer = setInterval(tick, 500);
+}
+
+function doRegisterEmail() {
+  const inp = document.getElementById('notifyEmailInput');
+  const msg = document.getElementById('emailMsg');
+  if (!inp || !msg) return;
+  const email = inp.value.trim();
+  if (!email) { msg.textContent = 'めーるあどれすをにゅうりょくしてください'; msg.style.color = '#FF3B30'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'ただしいめーるあどれすをにゅうりょくしてください'; msg.style.color = '#FF3B30'; return; }
+  msg.textContent = 'そうしんちゅう...'; msg.style.color = 'rgba(26,26,46,0.5)';
+  socket.emit('register_email', { email });
 }
 
 function showGameOver(finishers) {
@@ -1150,8 +1240,8 @@ document.getElementById('nameInput').addEventListener('keydown', e => { if (e.ke
 function doJoin() {
   const name  = document.getElementById('nameInput').value.trim();
   const errEl = document.getElementById('joinError');
-  if (!name) { errEl.textContent = '名前を入力してください'; return; }
-  if (name.length > 20) { errEl.textContent = '20文字以内にしてください'; return; }
+  if (!name) { errEl.textContent = 'なまえをにゅうりょくしてください'; return; }
+  if (name.length > 20) { errEl.textContent = '20もじいないにしてください'; return; }
   errEl.textContent = '';
   myUUID = getUUID();
   myName = name;

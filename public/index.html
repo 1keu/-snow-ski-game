@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>雪山スキーゲーム</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,59 +14,90 @@
 <!-- Left Sidebar: Stage minimap -->
 <div id="leftSidebar">
   <div id="stageMinimap">
-    <div class="mini-label top">START</div>
+    <div class="mini-label top">すたーと</div>
     <div id="stageTrack">
       <div id="stageMarkers"></div>
     </div>
-    <div class="mini-label bottom">GOAL</div>
+    <div class="mini-label bottom">ごーる</div>
   </div>
-  <div id="itemSlotsPanel">
-    <div class="mini-label">ITEMS</div>
-    <div class="item-slot-row">
-      <div class="item-slot" id="itemSlot0"><span class="slot-key">Z</span></div>
-      <div class="item-slot" id="itemSlot1"><span class="slot-key">X</span></div>
-      <div class="item-slot" id="itemSlot2"><span class="slot-key">C</span></div>
-    </div>
+</div>
+
+<!-- Floating: Item Slots (bottom center of canvas) -->
+<div id="itemSlotsPanel">
+  <div class="mini-label">あいてむ</div>
+  <div class="item-slot-row">
+    <div class="item-slot" id="itemSlot0"><span class="slot-key">Z</span></div>
+    <div class="item-slot" id="itemSlot1"><span class="slot-key">X</span></div>
+    <div class="item-slot" id="itemSlot2"><span class="slot-key">C</span></div>
   </div>
-  <div id="speedPanel">
-    <div class="mini-label">SPEED</div>
-    <div id="speedBar"><div id="speedFill" style="height:5%"></div></div>
-    <div id="speedValue">1.0×</div>
-  </div>
+</div>
+
+<!-- Floating: Speed Panel (bottom right of canvas) -->
+<div id="speedPanel">
+  <div class="mini-label">すぴーど</div>
+  <div id="speedBar"><div id="speedFill" style="height:5%"></div></div>
+  <div id="speedValue">1.0×</div>
 </div>
 
 <!-- Game Canvas -->
 <canvas id="gameCanvas"></canvas>
 
 <!-- Pause indicator (fixed, above canvas) -->
-<div id="pauseIndicator">⏸ PAUSE</div>
+<div id="pauseIndicator">⏸ ぽーず</div>
 
-<!-- Right Sidebar: Count + Ranking -->
+<!-- Right Sidebar: Count + My Rank + Ranking -->
 <div id="rightSidebar">
   <div id="playerCount">
     <span id="countNum">0</span>
-    <span class="count-label">人が参加中</span>
+    <span class="count-label">ぷれーやー</span>
+  </div>
+  <div id="myRankPanel">
+    <h3>おまえのじゅんい</h3>
+    <div id="myRankDisplay">-- い</div>
   </div>
   <div id="rankingPanel">
-    <h3>RANKING</h3>
+    <h3>らんきんぐ</h3>
     <div id="rankingList"></div>
+  </div>
+</div>
+
+<!-- Waiting (before game) -->
+<div id="waitingScreen" class="overlay hidden">
+  <div class="modal">
+    <h1>⛷️ ゆきやますきー</h1>
+    <div id="waitingStartLabel" class="waiting-start-label">かいさいじこくはみていです</div>
+    <div id="waitingCountdown" class="waiting-countdown">--:--:--</div>
+    <p class="small">かいさい30ぷんまえにめーるつうちをうけとれます</p>
+    <div class="email-register-row">
+      <input type="email" id="notifyEmailInput" placeholder="めーるあどれす" autocomplete="email">
+      <button onclick="doRegisterEmail()">つうちとうろく</button>
+    </div>
+    <div id="emailMsg" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- Ended (after game) -->
+<div id="endedScreen" class="overlay hidden">
+  <div class="modal">
+    <h1>🏁 ほんじつのかいさいしゅうりょう</h1>
+    <p>つぎのかいさいをおまちください。</p>
+    <p class="small">かんりしゃがすけじゅーるをせっていするとさいかいします</p>
   </div>
 </div>
 
 <!-- Join -->
 <div id="joinScreen" class="overlay">
   <div class="modal">
-    <h1>⛷️ 雪山スキー</h1>
-    <p>山頂からふもとまで滑り切れ！<br>完走まで<strong>約24時間</strong>（最速2時間）。TOP3を目指せ！</p>
+    <h1>⛷️ ゆきやますきー</h1>
+    <p>さんちょうからふもとまですべりきれ！<br>かんそうまで<strong>やく30ぷん</strong>（さいそく2.5ふん）。TOP3をめざせ！</p>
     <div class="rules">
-      <p>🌲 木・岩に当たると <strong>スピード × 1時間</strong> プレー禁止</p>
-      <p>🏔️ 崖から落ちると <strong>山頂からやり直し</strong></p>
-      <p>🖱️ マウス 下 → スピードUP ／ 上 → スピードDOWN</p>
-      <p>🏁 TOP3完走でゲームオーバー</p>
-      <p>🖱️ クリックで一時停止 / 再開</p>
+      <p>🌲 き・いわにあたると <strong>すぴーど×さいだい60びょう</strong> ぷれーきんし</p>
+      <p>🖱️ まうす した → すぴーどUP ／ うえ → すぴーどDOWN</p>
+      <p>🏁 TOP3かんそうでげーむおーばー</p>
+      <p>🖱️ くりっくでいちじていし / さいかい</p>
     </div>
-    <input type="text" id="nameInput" placeholder="プレイヤー名（20文字以内）" maxlength="20" autocomplete="off">
-    <button id="joinBtn">スタート！</button>
+    <input type="text" id="nameInput" placeholder="ぷれいやーめい（20もじいない）" maxlength="20" autocomplete="off">
+    <button id="joinBtn">すたーと！</button>
     <div class="error-msg" id="joinError"></div>
   </div>
 </div>
@@ -71,28 +105,20 @@
 <!-- Penalty -->
 <div id="penaltyScreen" class="overlay hidden">
   <div class="modal penalty-modal">
-    <h1>🌲 衝突！プレー禁止中</h1>
-    <p>スピードが速いほどペナルティが長くなります</p>
+    <h1>🌲 しょうとつ！ぷれーきんしちゅう</h1>
+    <p>すぴーどがはやいほどぺなるてぃがながくなります</p>
     <div id="penaltyCountdown">--:--:--</div>
-    <p class="small">時間になると自動的に再開します</p>
-  </div>
-</div>
-
-<!-- Cliff -->
-<div id="cliffScreen" class="overlay hidden">
-  <div class="modal cliff-modal">
-    <h1>🏔️ 崖から落下！</h1>
-    <p>山頂に戻ります…</p>
+    <p class="small">じかんになるとじどうてきにさいかいします</p>
   </div>
 </div>
 
 <!-- Game Over -->
 <div id="gameOverScreen" class="overlay hidden">
   <div class="modal">
-    <h1>🎮 ゲームオーバー</h1>
-    <p>TOP3が確定しました！</p>
+    <h1>🎮 げーむおーばー</h1>
+    <p>TOP3がかくていしました！</p>
     <div id="finalRanking" style="margin:18px 0"></div>
-    <p class="small">次回は管理者がリセットするまでお待ちください</p>
+    <p class="small">つぎかいはかんりしゃがりせっとするまでおまちください</p>
   </div>
 </div>
 

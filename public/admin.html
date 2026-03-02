@@ -3,179 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理者パネル</title>
+  <title>スキーゲーム 管理画面</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background: #0d1117;
-      color: #c9d1d9;
-      font-family: 'Hiragino Sans', 'Yu Gothic UI', monospace;
-      padding: 32px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 700;
+      background: #F5F5F0;
+      color: #1A1A2E;
+      min-height: 100vh;
+      padding: 32px 16px;
     }
-    h1 { font-size: 20px; margin-bottom: 24px; color: #e6edf3; }
-    h2 { font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; color: #8b949e; margin-bottom: 12px; }
-    .section { margin-bottom: 28px; }
+    h1 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: rgba(26,26,46,0.45); margin-bottom: 32px; }
     .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 20px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
       max-width: 560px;
+      box-shadow: 0 2px 12px rgba(26,26,46,0.08);
     }
-    input[type=password], input[type=text] {
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      color: #e6edf3;
-      font-size: 14px;
-      padding: 8px 12px;
+    .card h2 { font-size: 14px; font-weight: 900; margin-bottom: 16px; letter-spacing: 0.04em; }
+    label { font-size: 12px; color: rgba(26,26,46,0.55); display: block; margin-bottom: 4px; font-weight: 700; }
+    input[type="text"], input[type="password"], input[type="email"],
+    input[type="datetime-local"] {
       width: 100%;
-      margin-bottom: 10px;
-      outline: none;
-      font-family: inherit;
-    }
-    input:focus { border-color: #58a6ff; }
-    button {
-      border: none;
-      border-radius: 6px;
-      padding: 8px 20px;
+      padding: 10px 12px;
+      border: 1px solid rgba(26,26,46,0.15);
+      border-radius: 8px;
       font-size: 14px;
-      cursor: pointer;
       font-family: inherit;
+      font-weight: 700;
+      background: #F5F5F0;
+      color: #1A1A2E;
+      outline: none;
+      margin-bottom: 12px;
     }
-    .btn-blue  { background: #1f6feb; color: white; }
-    .btn-red   { background: #da3633; color: white; }
-    .btn-ghost { background: transparent; border: 1px solid #30363d; color: #c9d1d9; }
-    button:hover { opacity: 0.85; }
-    .msg { margin-top: 10px; font-size: 13px; min-height: 20px; }
-    .msg.ok  { color: #3fb950; }
-    .msg.err { color: #f85149; }
-    pre {
-      background: #0d1117;
-      border: 1px solid #30363d;
+    input:focus { border-color: rgba(26,26,46,0.4); background: #fff; }
+    button {
+      padding: 11px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #1A1A2E;
+      color: #F5F5F0;
+      font-size: 13px;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.18s;
+    }
+    button:hover { opacity: 0.78; }
+    button.danger { background: #FF3B30; }
+    .msg {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 20px;
+      padding: 8px 12px;
       border-radius: 6px;
-      padding: 14px;
-      font-size: 12px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-height: 420px;
-      overflow-y: auto;
+      display: none;
     }
-    .row { display: flex; gap: 8px; align-items: center; }
-    label { font-size: 13px; color: #8b949e; display: block; margin-bottom: 4px; }
-    .badge {
+    .msg.ok  { background: rgba(52,199,89,0.12); color: #1c7a3a; display: block; }
+    .msg.err { background: rgba(255,59,48,0.10); color: #c0392b; display: block; }
+    .status-box {
+      font-size: 12px;
+      background: #F5F5F0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      line-height: 1.9;
+      font-weight: 700;
+    }
+    .phase-badge {
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 10px;
+      border-radius: 4px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 900;
     }
-    .badge-green  { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
-    .badge-red    { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
-    .badge-yellow { background: rgba(210,153,34,0.15); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+    .phase-waiting { background: rgba(255,159,10,0.15); color: #8a5c00; }
+    .phase-active  { background: rgba(52,199,89,0.15);  color: #1c7a3a; }
+    .phase-ended   { background: rgba(142,142,147,0.20); color: #555; }
+    .row { display: flex; gap: 8px; align-items: flex-end; }
+    .row input { margin-bottom: 0; flex: 1; }
+    hr { border: none; border-top: 1px solid rgba(26,26,46,0.08); margin: 16px 0; }
+    #emailList { font-size: 12px; color: rgba(26,26,46,0.6); margin-top: 8px; line-height: 1.8; white-space: pre; }
+    small { font-size: 11px; color: rgba(26,26,46,0.40); display: block; margin-bottom: 12px; line-height: 1.6; font-weight: 400; }
+    code { background: rgba(26,26,46,0.06); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; font-weight: 400; }
   </style>
 </head>
 <body>
-<h1>⛷️ 雪山スキー — 管理者パネル</h1>
 
-<div class="section">
-  <div class="card">
-    <h2>認証</h2>
-    <label>管理者パスワード</label>
-    <input type="password" id="pw" placeholder="パスワードを入力">
-  </div>
+<h1>⛷️ スキーゲーム 管理画面</h1>
+<p class="subtitle">Admin panel — password required for all operations</p>
+
+<!-- パスワード -->
+<div class="card">
+  <h2>🔑 管理パスワード</h2>
+  <label>パスワード（全操作で共通）</label>
+  <input type="password" id="pw" placeholder="snowadmin2024">
 </div>
 
-<div class="section">
-  <div class="card">
-    <h2>ゲーム状態確認</h2>
-    <button class="btn-blue" onclick="fetchState()">最新状態を取得</button>
-    <div class="msg" id="stateMsg"></div>
-    <pre id="stateOut" style="margin-top:12px;display:none"></pre>
-  </div>
+<!-- 現在の状態 -->
+<div class="card">
+  <h2>📊 現在の状態</h2>
+  <div class="status-box" id="statusBox">読み込み中...</div>
+  <button onclick="loadStatus()">🔄 更新</button>
 </div>
 
-<div class="section">
-  <div class="card">
-    <h2>ゲームリセット</h2>
-    <p style="font-size:13px;color:#8b949e;margin-bottom:14px">
-      全プレイヤーのデータ・進行状況・ランキングを完全にリセットします。<br>
-      リセット後は全員が再度ゲームに参加できるようになります。
-    </p>
-    <div class="row">
-      <button class="btn-red" onclick="confirmReset()">🔄 ゲームをリセット</button>
-    </div>
-    <div class="msg" id="resetMsg"></div>
+<!-- スケジュール設定 -->
+<div class="card">
+  <h2>📅 開催スケジュール設定</h2>
+  <label>開催開始日時</label>
+  <input type="datetime-local" id="scheduleInput">
+  <small>ゲームは開始から <strong>30分間</strong> 開催されます。<br>
+  設定するとゲーム状態が自動リセットされ、登録メール宛に30分前通知が送信されます。</small>
+  <button onclick="setSchedule()">✅ スケジュールを設定</button>
+  <div class="msg" id="scheduleMsg"></div>
+</div>
+
+<!-- メール通知テスト -->
+<div class="card">
+  <h2>📧 メール設定・テスト</h2>
+  <small>メール送信には <code>.env</code> に以下の環境変数が必要です：<br>
+    <code>SMTP_HOST</code>　<code>SMTP_PORT</code>（587）　<code>SMTP_USER</code>　<code>SMTP_PASS</code>　<code>SMTP_FROM</code>　<code>GAME_URL</code></small>
+  <label>テスト送信先メールアドレス</label>
+  <div class="row">
+    <input type="email" id="testEmailTo" placeholder="test@example.com">
+    <button onclick="sendTestEmail()">送信</button>
   </div>
+  <div class="msg" id="emailMsg"></div>
+  <hr>
+  <label>通知登録済みメールアドレス</label>
+  <div id="emailList">—</div>
+</div>
+
+<!-- ゲームリセット -->
+<div class="card">
+  <h2>🔄 ゲームリセット（手動）</h2>
+  <small>プレイヤーデータ・順位・ボットをリセットします。<br>スケジュールはそのまま維持されます。</small>
+  <button class="danger" onclick="resetGame()">ゲームをリセット</button>
+  <div class="msg" id="resetMsg"></div>
 </div>
 
 <script>
-  function pw() { return document.getElementById('pw').value; }
+function pw() { return document.getElementById('pw').value; }
 
-  async function fetchState() {
-    const msg = document.getElementById('stateMsg');
-    const out = document.getElementById('stateOut');
-    if (!pw()) { msg.className='msg err'; msg.textContent='パスワードを入力してください'; return; }
-    msg.className='msg'; msg.textContent='取得中…';
-    try {
-      const res = await fetch(`/admin/state?password=${encodeURIComponent(pw())}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+function showMsg(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + (ok ? 'ok' : 'err');
+}
 
-      // Format nicely
-      const lines = [];
-      lines.push(`ゲーム状態: ${data.gameOver ? '🔴 ゲームオーバー' : '🟢 進行中'}`);
-      lines.push(`プレイヤー数: ${data.playerCount}`);
-      lines.push('');
-      lines.push('=== ランキング上位 ===');
-      (data.finishers || []).forEach(f => {
-        lines.push(`  第${f.rank}位 ${f.name}  (${fmtMs(f.time)})`);
-      });
-      lines.push('');
-      lines.push('=== 全プレイヤー ===');
-      (data.players || []).forEach(p => {
-        const pct  = (p.progress / 86400 * 100).toFixed(2);
-        const conn = p.connected ? '🟢' : '⚫';
-        const pen  = p.penaltyEnd && p.penaltyEnd > Date.now()
-          ? `  🌲ペナルティ残: ${fmtMs(p.penaltyEnd - Date.now())}` : '';
-        lines.push(`  ${conn} ${p.name.padEnd(14)} ${pct.padStart(7)}%  [${p.status}]${pen}`);
-      });
+async function loadStatus() {
+  const p = pw();
+  try {
+    const r = await fetch(`/admin/state?password=${encodeURIComponent(p)}`);
+    const d = await r.json();
+    if (!r.ok) { document.getElementById('statusBox').textContent = d.error; return; }
 
-      out.textContent = lines.join('\n');
-      out.style.display = 'block';
-      msg.className='msg ok'; msg.textContent='取得成功';
-    } catch (e) {
-      msg.className='msg err'; msg.textContent='エラー: ' + e.message;
+    const phaseLabel = { waiting: '待機中', active: '開催中', ended: '終了' };
+    const phaseCls   = { waiting: 'phase-waiting', active: 'phase-active', ended: 'phase-ended' };
+    const ph  = d.phase || 'waiting';
+    const st  = d.startTime ? new Date(d.startTime).toLocaleString('ja-JP') : '未設定';
+    const end = d.startTime
+      ? new Date(new Date(d.startTime).getTime() + 30*60*1000).toLocaleString('ja-JP')
+      : '—';
+
+    document.getElementById('statusBox').innerHTML =
+      `<b>フェーズ:</b> <span class="phase-badge ${phaseCls[ph]}">${phaseLabel[ph] || ph}</span><br>` +
+      `<b>開始:</b> ${st}<br>` +
+      `<b>終了:</b> ${end}<br>` +
+      `<b>参加プレイヤー:</b> ${d.playerCount}人 ／ TOP3完了: ${d.finishers.length}人<br>` +
+      `<b>ゲームオーバー:</b> ${d.gameOver ? '✓ 完了' : '進行中'}`;
+
+    // Load email list from schedule endpoint
+    const sr = await fetch(`/admin/schedule?password=${encodeURIComponent(p)}`);
+    if (sr.ok) {
+      const sd = await sr.json();
+      const el2 = document.getElementById('emailList');
+      el2.textContent = sd.notifyEmails && sd.notifyEmails.length
+        ? sd.notifyEmails.join('\n')
+        : '（登録なし）';
     }
+  } catch(e) {
+    document.getElementById('statusBox').textContent = 'エラー: ' + e.message;
   }
+}
 
-  async function confirmReset() {
-    const msg = document.getElementById('resetMsg');
-    if (!pw()) { msg.className='msg err'; msg.textContent='パスワードを入力してください'; return; }
-    if (!confirm('本当にゲームをリセットしますか？\n全プレイヤーのデータが消えます。')) return;
-    msg.className='msg'; msg.textContent='リセット中…';
-    try {
-      const res  = await fetch('/admin/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      msg.className='msg ok'; msg.textContent='✓ ' + data.message;
-    } catch (e) {
-      msg.className='msg err'; msg.textContent='エラー: ' + e.message;
+async function setSchedule() {
+  const p   = pw();
+  const val = document.getElementById('scheduleInput').value;
+  if (!val) { showMsg('scheduleMsg', '日時を選択してください', false); return; }
+  const dt = new Date(val); // datetime-local is in local time
+  try {
+    const r = await fetch('/admin/schedule', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password: p, startTime: dt.toISOString() }),
+    });
+    const d = await r.json();
+    if (r.ok) {
+      showMsg('scheduleMsg',
+        `✓ 設定完了: ${new Date(d.startTime).toLocaleString('ja-JP')} 開催 (状態: ${d.phase})`, true);
+      loadStatus();
+    } else {
+      showMsg('scheduleMsg', d.error, false);
     }
-  }
+  } catch(e) { showMsg('scheduleMsg', e.message, false); }
+}
 
-  function fmtMs(ms) {
-    const s = Math.floor(ms / 1000);
-    const h = Math.floor(s / 3600);
-    const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
-    const sec = String(s % 60).padStart(2, '0');
-    return `${h}h${m}m${sec}s`;
-  }
+async function sendTestEmail() {
+  const p  = pw();
+  const to = document.getElementById('testEmailTo').value.trim();
+  if (!to) { showMsg('emailMsg', '送信先を入力してください', false); return; }
+  showMsg('emailMsg', '送信中...', true);
+  try {
+    const r = await fetch('/admin/test-email', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password: p, to }),
+    });
+    const d = await r.json();
+    r.ok
+      ? showMsg('emailMsg', `✓ ${to} に送信しました`, true)
+      : showMsg('emailMsg', d.error, false);
+  } catch(e) { showMsg('emailMsg', e.message, false); }
+}
+
+async function resetGame() {
+  if (!confirm('ゲームをリセットしますか？\nプレイヤーデータが消去されます。')) return;
+  try {
+    const r = await fetch('/admin/reset', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password: pw() }),
+    });
+    const d = await r.json();
+    r.ok
+      ? showMsg('resetMsg', '✓ リセット完了', true)
+      : showMsg('resetMsg', d.error, false);
+    loadStatus();
+  } catch(e) { showMsg('resetMsg', e.message, false); }
+}
+
+// Set default datetime to 30 min from now (local time)
+const now = new Date(Date.now() + 30*60*1000);
+const pad = n => String(n).padStart(2, '0');
+document.getElementById('scheduleInput').value =
+  `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}` +
+  `T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+loadStatus();
 </script>
 </body>
 </html>
