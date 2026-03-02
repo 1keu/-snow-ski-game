@@ -5,7 +5,7 @@ const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
 const path       = require('path');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const app    = express();
 const server = http.createServer(app);
@@ -70,45 +70,40 @@ function scheduleNotification() {
   console.log(`[schedule] 通知タイマー設定: ${Math.round(delay/1000)}秒後`);
 }
 
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null;
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
+function fromAddress() {
+  return process.env.RESEND_FROM || 'onboarding@resend.dev';
+}
+
 async function sendNotificationEmails() {
   if (schedule.notifyEmails.size === 0) return;
-  if (!process.env.SMTP_HOST) {
-    console.log('[email] SMTP未設定のため通知スキップ');
+  const resend = getResend();
+  if (!resend) {
+    console.log('[email] RESEND_API_KEY未設定のため通知スキップ');
     return;
   }
-  const transporter = createTransporter();
-  if (!transporter) return;
   const startStr = schedule.startTime
     ? schedule.startTime.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
     : '';
+  const gameUrl = process.env.GAME_URL || 'http://localhost:' + PORT;
   for (const email of schedule.notifyEmails) {
     try {
-      await transporter.sendMail({
-        from:    process.env.SMTP_FROM || process.env.SMTP_USER,
+      await resend.emails.send({
+        from:    fromAddress(),
         to:      email,
         subject: '⛷️ スキーゲーム開催30分前のお知らせ',
-        text:    `スキーゲームが30分後（${startStr}）に開催されます！準備してください！\n\nゲームURL: ${process.env.GAME_URL || 'http://localhost:' + PORT}`,
-        html:    `<p>⛷️ スキーゲームが<strong>30分後（${startStr}）</strong>に開催されます！</p><p><a href="${process.env.GAME_URL || 'http://localhost:' + PORT}">ゲームを開く</a></p>`,
+        text:    `スキーゲームが30分後（${startStr}）に開催されます！\n\nゲームURL: ${gameUrl}`,
+        html:    `<p>⛷️ スキーゲームが<strong>30分後（${startStr}）</strong>に開催されます！</p><p><a href="${gameUrl}">ゲームを開く</a></p>`,
       });
       console.log(`[email] 通知送信: ${email}`);
     } catch (e) {
       console.error(`[email] 送信失敗 ${email}: ${e.message}`);
     }
   }
-}
-
-function createTransporter() {
-  if (!process.env.SMTP_HOST) return null;
-  return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST,
-    port:   parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    family: 4, // IPv4強制（Railway等クラウドのIPv6接続問題を回避）
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
 }
 
 // ── Game state (in-memory) ────────────────────────────────────
@@ -622,12 +617,11 @@ app.post('/admin/test-email', async (req, res) => {
   const { password, to } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'パスワードが違います' });
   if (!to) return res.status(400).json({ error: '送信先メールアドレスが必要です' });
-  if (!process.env.SMTP_HOST) return res.status(400).json({ error: 'SMTP_HOST が未設定です' });
-  const transporter = createTransporter();
-  if (!transporter) return res.status(500).json({ error: 'メール設定エラー' });
+  const resend = getResend();
+  if (!resend) return res.status(400).json({ error: 'RESEND_API_KEY が未設定です' });
   try {
-    await transporter.sendMail({
-      from:    process.env.SMTP_FROM || process.env.SMTP_USER,
+    await resend.emails.send({
+      from:    fromAddress(),
       to,
       subject: '⛷️ スキーゲーム テストメール',
       text:    'これはテストメールです。メール通知が正しく設定されています。',
