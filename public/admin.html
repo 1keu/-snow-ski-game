@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者パネル</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Hiragino Sans', 'Yu Gothic UI', monospace;
+      padding: 32px;
+    }
+    h1 { font-size: 20px; margin-bottom: 24px; color: #e6edf3; }
+    h2 { font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; color: #8b949e; margin-bottom: 12px; }
+    .section { margin-bottom: 28px; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 560px;
+    }
+    input[type=password], input[type=text] {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 14px;
+      padding: 8px 12px;
+      width: 100%;
+      margin-bottom: 10px;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus { border-color: #58a6ff; }
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-blue  { background: #1f6feb; color: white; }
+    .btn-red   { background: #da3633; color: white; }
+    .btn-ghost { background: transparent; border: 1px solid #30363d; color: #c9d1d9; }
+    button:hover { opacity: 0.85; }
+    .msg { margin-top: 10px; font-size: 13px; min-height: 20px; }
+    .msg.ok  { color: #3fb950; }
+    .msg.err { color: #f85149; }
+    pre {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .row { display: flex; gap: 8px; align-items: center; }
+    label { font-size: 13px; color: #8b949e; display: block; margin-bottom: 4px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-green  { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+    .badge-red    { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+    .badge-yellow { background: rgba(210,153,34,0.15); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+  </style>
+</head>
+<body>
+<h1>⛷️ 雪山スキー — 管理者パネル</h1>
+
+<div class="section">
+  <div class="card">
+    <h2>認証</h2>
+    <label>管理者パスワード</label>
+    <input type="password" id="pw" placeholder="パスワードを入力">
+  </div>
+</div>
+
+<div class="section">
+  <div class="card">
+    <h2>ゲーム状態確認</h2>
+    <button class="btn-blue" onclick="fetchState()">最新状態を取得</button>
+    <div class="msg" id="stateMsg"></div>
+    <pre id="stateOut" style="margin-top:12px;display:none"></pre>
+  </div>
+</div>
+
+<div class="section">
+  <div class="card">
+    <h2>ゲームリセット</h2>
+    <p style="font-size:13px;color:#8b949e;margin-bottom:14px">
+      全プレイヤーのデータ・進行状況・ランキングを完全にリセットします。<br>
+      リセット後は全員が再度ゲームに参加できるようになります。
+    </p>
+    <div class="row">
+      <button class="btn-red" onclick="confirmReset()">🔄 ゲームをリセット</button>
+    </div>
+    <div class="msg" id="resetMsg"></div>
+  </div>
+</div>
+
+<script>
+  function pw() { return document.getElementById('pw').value; }
+
+  async function fetchState() {
+    const msg = document.getElementById('stateMsg');
+    const out = document.getElementById('stateOut');
+    if (!pw()) { msg.className='msg err'; msg.textContent='パスワードを入力してください'; return; }
+    msg.className='msg'; msg.textContent='取得中…';
+    try {
+      const res = await fetch(`/admin/state?password=${encodeURIComponent(pw())}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Format nicely
+      const lines = [];
+      lines.push(`ゲーム状態: ${data.gameOver ? '🔴 ゲームオーバー' : '🟢 進行中'}`);
+      lines.push(`プレイヤー数: ${data.playerCount}`);
+      lines.push('');
+      lines.push('=== ランキング上位 ===');
+      (data.finishers || []).forEach(f => {
+        lines.push(`  第${f.rank}位 ${f.name}  (${fmtMs(f.time)})`);
+      });
+      lines.push('');
+      lines.push('=== 全プレイヤー ===');
+      (data.players || []).forEach(p => {
+        const pct  = (p.progress / 86400 * 100).toFixed(2);
+        const conn = p.connected ? '🟢' : '⚫';
+        const pen  = p.penaltyEnd && p.penaltyEnd > Date.now()
+          ? `  🌲ペナルティ残: ${fmtMs(p.penaltyEnd - Date.now())}` : '';
+        lines.push(`  ${conn} ${p.name.padEnd(14)} ${pct.padStart(7)}%  [${p.status}]${pen}`);
+      });
+
+      out.textContent = lines.join('\n');
+      out.style.display = 'block';
+      msg.className='msg ok'; msg.textContent='取得成功';
+    } catch (e) {
+      msg.className='msg err'; msg.textContent='エラー: ' + e.message;
+    }
+  }
+
+  async function confirmReset() {
+    const msg = document.getElementById('resetMsg');
+    if (!pw()) { msg.className='msg err'; msg.textContent='パスワードを入力してください'; return; }
+    if (!confirm('本当にゲームをリセットしますか？\n全プレイヤーのデータが消えます。')) return;
+    msg.className='msg'; msg.textContent='リセット中…';
+    try {
+      const res  = await fetch('/admin/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      msg.className='msg ok'; msg.textContent='✓ ' + data.message;
+    } catch (e) {
+      msg.className='msg err'; msg.textContent='エラー: ' + e.message;
+    }
+  }
+
+  function fmtMs(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return `${h}h${m}m${sec}s`;
+  }
+</script>
+</body>
+</html>

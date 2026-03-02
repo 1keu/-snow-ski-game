@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>雪山スキーゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Left Sidebar: Stage minimap -->
+<div id="leftSidebar">
+  <div id="stageMinimap">
+    <div class="mini-label top">START</div>
+    <div id="stageTrack">
+      <div id="stageMarkers"></div>
+    </div>
+    <div class="mini-label bottom">GOAL</div>
+  </div>
+  <div id="itemSlotsPanel">
+    <div class="mini-label">ITEMS</div>
+    <div class="item-slot-row">
+      <div class="item-slot" id="itemSlot0"><span class="slot-key">Z</span></div>
+      <div class="item-slot" id="itemSlot1"><span class="slot-key">X</span></div>
+      <div class="item-slot" id="itemSlot2"><span class="slot-key">C</span></div>
+    </div>
+  </div>
+  <div id="speedPanel">
+    <div class="mini-label">SPEED</div>
+    <div id="speedBar"><div id="speedFill" style="height:5%"></div></div>
+    <div id="speedValue">1.0×</div>
+  </div>
+</div>
+
+<!-- Game Canvas -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- Pause indicator (fixed, above canvas) -->
+<div id="pauseIndicator">⏸ PAUSE</div>
+
+<!-- Right Sidebar: Count + Ranking -->
+<div id="rightSidebar">
+  <div id="playerCount">
+    <span id="countNum">0</span>
+    <span class="count-label">人が参加中</span>
+  </div>
+  <div id="rankingPanel">
+    <h3>RANKING</h3>
+    <div id="rankingList"></div>
+  </div>
+</div>
+
+<!-- Join -->
+<div id="joinScreen" class="overlay">
+  <div class="modal">
+    <h1>⛷️ 雪山スキー</h1>
+    <p>山頂からふもとまで滑り切れ！<br>完走まで<strong>約24時間</strong>（最速2時間）。TOP3を目指せ！</p>
+    <div class="rules">
+      <p>🌲 木・岩に当たると <strong>スピード × 1時間</strong> プレー禁止</p>
+      <p>🏔️ 崖から落ちると <strong>山頂からやり直し</strong></p>
+      <p>🖱️ マウス 下 → スピードUP ／ 上 → スピードDOWN</p>
+      <p>🏁 TOP3完走でゲームオーバー</p>
+      <p>🖱️ クリックで一時停止 / 再開</p>
+    </div>
+    <input type="text" id="nameInput" placeholder="プレイヤー名（20文字以内）" maxlength="20" autocomplete="off">
+    <button id="joinBtn">スタート！</button>
+    <div class="error-msg" id="joinError"></div>
+  </div>
+</div>
+
+<!-- Penalty -->
+<div id="penaltyScreen" class="overlay hidden">
+  <div class="modal penalty-modal">
+    <h1>🌲 衝突！プレー禁止中</h1>
+    <p>スピードが速いほどペナルティが長くなります</p>
+    <div id="penaltyCountdown">--:--:--</div>
+    <p class="small">時間になると自動的に再開します</p>
+  </div>
+</div>
+
+<!-- Cliff -->
+<div id="cliffScreen" class="overlay hidden">
+  <div class="modal cliff-modal">
+    <h1>🏔️ 崖から落下！</h1>
+    <p>山頂に戻ります…</p>
+  </div>
+</div>
+
+<!-- Game Over -->
+<div id="gameOverScreen" class="overlay hidden">
+  <div class="modal">
+    <h1>🎮 ゲームオーバー</h1>
+    <p>TOP3が確定しました！</p>
+    <div id="finalRanking" style="margin:18px 0"></div>
+    <p class="small">次回は管理者がリセットするまでお待ちください</p>
+  </div>
+</div>
+
+<div id="disasterToast" class="hidden">
+  <span id="toastMsg"></span><span id="toastCd"></span>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

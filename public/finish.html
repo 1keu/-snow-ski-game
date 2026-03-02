@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>完走おめでとう！</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #F5F5F0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+      color: #1A1A2E;
+      overflow: hidden;
+    }
+
+    /* Falling snowflakes */
+    .flake {
+      position: fixed;
+      top: -10px;
+      color: rgba(26,26,46,0.12);
+      font-size: 16px;
+      animation: fall linear infinite;
+      user-select: none;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    .card {
+      background: #1A1A2E;
+      border-radius: 14px;
+      padding: 48px 56px;
+      text-align: center;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 32px 80px rgba(26,26,46,0.15);
+      position: relative;
+      z-index: 1;
+      color: #F5F5F0;
+    }
+
+    .rank-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,245,240,0.4);
+      margin-bottom: 6px;
+    }
+    .rank-number {
+      font-size: 64px;
+      font-weight: 700;
+      color: #F5F5F0;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .rank-suffix {
+      font-size: 13px;
+      color: rgba(245,245,240,0.45);
+      margin-bottom: 24px;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(245,245,240,0.15);
+      margin: 20px auto;
+    }
+
+    .player-name {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .time-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245,245,240,0.4);
+      margin-bottom: 6px;
+      margin-top: 20px;
+    }
+    .time-value {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      color: #F5F5F0;
+    }
+
+    .divider { margin: 24px auto; }
+
+    .share-btn {
+      display: inline-block;
+      padding: 13px 32px;
+      border-radius: 8px;
+      border: none;
+      background: #F5F5F0;
+      color: #1A1A2E;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.02em;
+      margin-top: 28px;
+    }
+    .share-btn:hover  { opacity: 0.88; }
+    .share-btn:active { transform: scale(0.97); }
+
+    .copied {
+      font-size: 11px;
+      color: rgba(245,245,240,0.55);
+      margin-top: 10px;
+      min-height: 16px;
+      letter-spacing: 0.03em;
+    }
+    .back { margin-top: 18px; }
+    .back a {
+      font-size: 12px;
+      color: rgba(245,245,240,0.35);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    .back a:hover { color: rgba(245,245,240,0.65); }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="rank-label">RANK</div>
+  <div class="rank-number" id="rankNum">—</div>
+  <div class="rank-suffix" id="rankSuffix"></div>
+
+  <div class="divider"></div>
+
+  <div class="player-name" id="playerName">—</div>
+
+  <div class="time-label">PLAY TIME</div>
+  <div class="time-value" id="timeVal">—</div>
+
+  <br>
+  <button class="share-btn" id="shareBtn">Share</button>
+  <div class="copied" id="copiedMsg"></div>
+  <div class="back"><a href="/">← Back to game</a></div>
+</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const name   = params.get('name') || '—';
+  const rank   = parseInt(params.get('rank')) || 0;
+  const timeMs = parseInt(params.get('time')) || 0;
+
+  const suffixes = { 1: 'st', 2: 'nd', 3: 'rd' };
+  document.getElementById('rankNum').textContent    = rank || '—';
+  document.getElementById('rankSuffix').textContent = rank ? (suffixes[rank] || 'th') + ' place' : '';
+  document.getElementById('playerName').textContent = name;
+
+  function fmtMs(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = String(Math.floor(s / 3600)).padStart(2, '0');
+    const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+  }
+  document.getElementById('timeVal').textContent = timeMs ? fmtMs(timeMs) : '—';
+  document.title = `${name} — ${rank ? rank + (suffixes[rank]||'th') + ' place' : ''} Snow Ski`;
+
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const url  = location.href;
+    const text = `⛷ Snow Ski — ${name}  ${rank ? rank + (suffixes[rank]||'th') + ' place' : ''}  ${fmtMs(timeMs)}`;
+    const msg  = document.getElementById('copiedMsg');
+    if (navigator.share) {
+      try { await navigator.share({ title: document.title, text, url }); return; } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      msg.textContent = 'Copied to clipboard';
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    } catch {
+      msg.textContent = url;
+    }
+  });
+
+  // Subtle falling snowflakes
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'flake';
+    el.textContent = '❄';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (5 + Math.random() * 9) + 's';
+    el.style.animationDelay    = (-Math.random() * 9) + 's';
+    el.style.fontSize = (8 + Math.random() * 12) + 'px';
+    document.body.appendChild(el);
+  }
+</script>
+</body>
+</html>
