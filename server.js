@@ -95,9 +95,9 @@ async function sendNotificationEmails() {
       await resend.emails.send({
         from:    fromAddress(),
         to:      email,
-        subject: '⛷️ スキーゲーム開催30分前のお知らせ',
-        text:    `スキーゲームが30分後（${startStr}）に開催されます！\n\nゲームURL: ${gameUrl}`,
-        html:    `<p>⛷️ スキーゲームが<strong>30分後（${startStr}）</strong>に開催されます！</p><p><a href="${gameUrl}">ゲームを開く</a></p>`,
+        subject: 'ですげいむ かいさい30ぷんまえ',
+        text:    `ですげいむが30ふんご（${startStr}）にかいさいされます。\n\nURL: ${gameUrl}`,
+        html:    `<p>ですげいむが<strong>30ふんご（${startStr}）</strong>にかいさいされます。</p><p><a href="${gameUrl}">さんかする</a></p>`,
       });
       console.log(`[email] 通知送信: ${email}`);
     } catch (e) {
@@ -623,8 +623,8 @@ app.post('/admin/test-email', async (req, res) => {
     await resend.emails.send({
       from:    fromAddress(),
       to,
-      subject: '⛷️ スキーゲーム テストメール',
-      text:    'これはテストメールです。メール通知が正しく設定されています。',
+      subject: 'ですげいむ てすとめーる',
+      text:    'てすとめーるです。めーるつうちがせっていされています。',
     });
     console.log(`[admin] テストメール送信: ${to}`);
     res.json({ success: true });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>雪山スキーゲーム</title>
+  <title>ですげいむ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
@@ -64,7 +64,7 @@
 <!-- Waiting (before game) -->
 <div id="waitingScreen" class="overlay hidden">
   <div class="modal">
-    <h1>⛷️ ゆきやますきー</h1>
+    <h1>ですげいむ</h1>
     <div id="waitingStartLabel" class="waiting-start-label">かいさいじこくはみていです</div>
     <div id="waitingCountdown" class="waiting-countdown">--:--:--</div>
     <p class="small">かいさい30ぷんまえにめーるつうちをうけとれます</p>
@@ -79,8 +79,8 @@
 <!-- Ended (after game) -->
 <div id="endedScreen" class="overlay hidden">
   <div class="modal">
-    <h1>🏁 ほんじつのかいさいしゅうりょう</h1>
-    <p>つぎのかいさいをおまちください。</p>
+    <h1>ですげいむ</h1>
+    <p>かいさいしゅうりょう。つぎのかいさいをまて。</p>
     <p class="small">かんりしゃがすけじゅーるをせっていするとさいかいします</p>
   </div>
 </div>
@@ -88,16 +88,16 @@
 <!-- Join -->
 <div id="joinScreen" class="overlay">
   <div class="modal">
-    <h1>⛷️ ゆきやますきー</h1>
-    <p>さんちょうからふもとまですべりきれ！<br>かんそうまで<strong>やく30ぷん</strong>（さいそく2.5ふん）。TOP3をめざせ！</p>
+    <h1>ですげいむ</h1>
+    <p>ごーるをめざせ。じゃまをくぐりぬけて、TOP3にはいれ。<br>かんそうまで<strong>やく30ぷん</strong>（さいそく2.5ふん）。</p>
     <div class="rules">
-      <p>🌲 き・いわにあたると <strong>すぴーど×さいだい60びょう</strong> ぷれーきんし</p>
-      <p>🖱️ まうす した → すぴーどUP ／ うえ → すぴーどDOWN</p>
-      <p>🏁 TOP3かんそうでげーむおーばー</p>
-      <p>🖱️ くりっくでいちじていし / さいかい</p>
+      <p>とげ・ぶろっく・きかいにあたると <strong>すぴーど×さいだい60びょう</strong> きんし</p>
+      <p>まうす した → すぴーどUP ／ うえ → すぴーどDOWN</p>
+      <p>TOP3かんそうでげーむおーばー</p>
+      <p>くりっくでいちじていし / さいかい</p>
     </div>
-    <input type="text" id="nameInput" placeholder="ぷれいやーめい（20もじいない）" maxlength="20" autocomplete="off">
-    <button id="joinBtn">すたーと！</button>
+    <input type="text" id="nameInput" placeholder="なまえ（20もじいない）" maxlength="20" autocomplete="off">
+    <button id="joinBtn">さんか</button>
     <div class="error-msg" id="joinError"></div>
   </div>
 </div>
@@ -105,7 +105,7 @@
 <!-- Penalty -->
 <div id="penaltyScreen" class="overlay hidden">
   <div class="modal penalty-modal">
-    <h1>🌲 しょうとつ！ぷれーきんしちゅう</h1>
+    <h1>しょうとつ — きんしちゅう</h1>
     <p>すぴーどがはやいほどぺなるてぃがながくなります</p>
     <div id="penaltyCountdown">--:--:--</div>
     <p class="small">じかんになるとじどうてきにさいかいします</p>
@@ -115,10 +115,10 @@
 <!-- Game Over -->
 <div id="gameOverScreen" class="overlay hidden">
   <div class="modal">
-    <h1>🎮 げーむおーばー</h1>
-    <p>TOP3がかくていしました！</p>
+    <h1>ですげいむ おわり</h1>
+    <p>TOP3がかくていしました</p>
     <div id="finalRanking" style="margin:18px 0"></div>
-    <p class="small">つぎかいはかんりしゃがりせっとするまでおまちください</p>
+    <p class="small">つぎかいはかんりしゃがりせっとするまでまて</p>
   </div>
 </div>
 

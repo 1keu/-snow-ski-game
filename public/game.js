@@ -24,21 +24,21 @@ const SHELTER_INTERVAL  = 180;
 const SHELTER_SEED_XOR  = 0xBEEF4567;
 
 const ITEMS = [
-  { id:1,  name:'ゆきだま',               icon:'⚪', desc:'あいて1にん+2じかん' },
-  { id:2,  name:'おおゆきだま',           icon:'🔵', desc:'1い+3じかん' },
-  { id:3,  name:'ふぶき',                 icon:'❄️',  desc:'らんだむ3にん+1じかん' },
-  { id:4,  name:'なだれ',                 icon:'🏔️',  desc:'ぜんいん+3じかん(いわかげでかいひか)' },
-  { id:5,  name:'ゆきだるま',             icon:'⛄', desc:'ぜんぽう3にん+2じかん(かいひか)' },
-  { id:6,  name:'しゅんかんいどう',       icon:'⚡', desc:'じぶん+50%すすむ' },
-  { id:7,  name:'おゆ',                   icon:'♨️',  desc:'つぎのさいがいをむこうか' },
-  { id:8,  name:'わっくす',               icon:'🎿', desc:'さいこうそく×1.5 30ふん' },
-  { id:9,  name:'こーひー',               icon:'☕', desc:'ぺなるてぃ-3じかん' },
-  { id:10, name:'おとしあな',             icon:'🕳️',  desc:'1い+4じかん' },
-  { id:11, name:'ろけっと',               icon:'🚀', desc:'じぶん+10%すすむ' },
-  { id:12, name:'ぶーすたー',             icon:'💨', desc:'そくど×2 10ふん' },
-  { id:13, name:'あいすばーん',           icon:'🧊', desc:'らんだむ5にん+1じかん' },
-  { id:14, name:'すーぱーゆきだるま',     icon:'⛰️',  desc:'ぜんぽう5にん+3じかん(かいひか)' },
-  { id:15, name:'おんせん',               icon:'🛁', desc:'じぶんのぺなるてぃそくじかいじょ' },
+  { id:1,  name:'たま',       icon:'⚪', desc:'あいて1にん+2じかん' },
+  { id:2,  name:'おおたま',   icon:'🔵', desc:'1い+3じかん' },
+  { id:3,  name:'あらし',     icon:'❄️',  desc:'らんだむ3にん+1じかん' },
+  { id:4,  name:'だいさいがい', icon:'🏔️', desc:'ぜんいん+3じかん(かくれがでかいひか)' },
+  { id:5,  name:'わな',       icon:'⛄', desc:'ぜんぽう3にん+2じかん(かいひか)' },
+  { id:6,  name:'わーぷ',     icon:'⚡', desc:'じぶん+50%すすむ' },
+  { id:7,  name:'まもり',     icon:'♨️',  desc:'つぎのさいがいをむこうか' },
+  { id:8,  name:'かいぞう',   icon:'🎿', desc:'さいこうそく×1.5 30ふん' },
+  { id:9,  name:'かいふく',   icon:'☕', desc:'ぺなるてぃ-3じかん' },
+  { id:10, name:'おとしあな', icon:'🕳️',  desc:'1い+4じかん' },
+  { id:11, name:'ろけっと',   icon:'🚀', desc:'じぶん+10%すすむ' },
+  { id:12, name:'ぶーすたー', icon:'💨', desc:'そくど×2 10ふん' },
+  { id:13, name:'まひ',       icon:'🧊', desc:'らんだむ5にん+1じかん' },
+  { id:14, name:'おおわな',   icon:'⛰️',  desc:'ぜんぽう5にん+3じかん(かいひか)' },
+  { id:15, name:'かいほう',   icon:'🛁', desc:'じぶんのぺなるてぃそくじかいじょ' },
 ];
 
 // ── Dynamic screen dimensions ──
@@ -465,7 +465,7 @@ socket.on('item_self_effect', ({ effect, progress, penaltyEnd: pe, speedBoostMul
       }
       break;
     case 'hot_water':
-      showToast('♨️ おゆをそうび！つぎのさいがいをむこうか', 5);
+      showToast('♨️ まもりをそうび！つぎのさいがいをむこうか', 5);
       break;
     default:
       break;
@@ -497,7 +497,7 @@ socket.on('disaster_warning', ({ type, disasterId, countdown, msg }) => {
 socket.on('disaster_hit', ({ sheltered, protected: prot }) => {
   if (sheltered || prot) {
     hideToast();
-    showToast('🪨 いわかげでかいひ！', 3);
+    showToast('🪨 かくれがでかいひ！', 3);
     addStageFX({ type: 'screen_flash', color: '#44FF88', t: 0.7, maxT: 0.7 });
   } else {
     addStageFX({ type: 'screen_flash', color: '#FF4444', t: 0.7, maxT: 0.7 });
@@ -912,7 +912,7 @@ function drawShelter(sh) {
   ctx.font = `${Math.max(8, Math.round(8 * SX))}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('いわかげ', cx, sy + shadowH * 0.5);
+  ctx.fillText('かくれが', cx, sy + shadowH * 0.5);
   ctx.restore();
 }
 
